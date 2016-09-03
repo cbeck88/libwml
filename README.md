@@ -1,0 +1,190 @@
+libwml
+======
+
+**libwml** is a C++ library which assists in reading collections of wesnoth WML files.
+It can handle loading individual files, campaigns, add-ons, or even the entire WML core.
+
+It can also do this *without* expanding preprocessor macros, and produce a data representation
+of the content with all macros in an unexpanded state.
+
+In a nutshell, **libwml** tries to be for WML what **libclang** is for C++.
+
+History and Purpose
+===================
+
+The first version of **libwml** was created with the idea of producing a very robust and exact tool
+which could rewrite wesnoth WML datafiles in fabi's WSL language. I created a version which was
+capable of reading the entire wesnoth core sometime in mid 2015. Actually it found several bugs
+in core content, mainly typos in attribute names, which were reported and fixed. (However I never finished
+developing the tool, and never announced it publicly.)
+
+The major technical issue here is that in lua, there is no standard preprocessor, and the idea is to
+try to use functions in most cases where Wesnoth uses macros. We'd like to automatically rewrite the
+macros and macro-uses as function definitions and functions calls. This means that we cannot use the
+same parsing strategy that Wesnoth uses for WML -- when wesnoth reads WML, it expands all macros immediately,
+in an initial preprocessing step. This is fine if you just want to load and run WML, but if you want to
+diagnose macro problems, collect information about macros, or rewrite WML macros differently, you want to avoid
+expanding macros, which means the parser needs to be smart enough to represent unexpanded macros, treat those
+as a grammatical element, and parse around them.
+
+As an example:
+
+Here's some (nonsensical) WML containing a macro definition, a tag, and a macro instance.
+
+```
+#define BAR X
+bar: X X
+
+[unit]
+  name = foo {BAR baz}
+[/unit]
+```
+
+When wesnoth loads this, it will first scan through all the files, process all includes macros and definitions,
+and perform textual replacements for each macro. This is the preprocessor step. It will get rid of all the macros,
+and produce pure WML which looks something like this:
+
+```
+[unit]
+  name = foo bar: baz baz
+[/unit]
+```
+
+In the WML -> WSL application, what we would *like* to be able to do with WML like this is translate macros into function calls. So we might end up with
+something like this in lua:
+
+```
+function bar(X)
+  return "bar: " .. X .. X
+end
+
+Unit {
+  name = 'foo' .. bar('baz')
+}
+```
+
+**libwml** doesn't go all the way there. It doesn't include an emitter, only a parser. What it does instead is produce an intermediate representation *vaguely* like this:
+
+Macros:
+```
+BAR(X): string -> string
+"bar: " .. X .. X
+```
+
+WML:
+```
+[unit]
+  name = foo {BAR baz}
+[/unit]
+```
+
+The early, 2015 version of *libwml* was a *proof of concept* to see that we
+could realistically parse most core WML and add-ons this way.
+
+At that time, WSL was far from complete and it wasn't realistic to attempt to write an actual *emitter*.
+So all we had was a front end and I just left it at that and set it aside until later.
+
+Later, Wesnoth2 project was launched. In that project, one of the things that they would like to do is
+rewrite / reimplement wesnoth campaigns into FFL, the "frogatto formula language" used by the Anura engine. FFL does have preprocessor macros like Wesnoth, but it also has a proper
+notion of functions, and doesn't rely on macros nearly to the extent that Wesnoth 1 does. Usually you try to use functions whenever possible. That's
+quite similar to what WSL attempts to do. So **libwml** might help to make an automatic tool to rewrite Wesnoth
+WML campaigns automatically as FFL appropriate for the wesnoth 2 project.
+
+Potentially, something like **libwml** could be used inside wesnoth itself, because it would lead to more
+rigorous parsing and error reporting. The game itself would be capable of catching typo problems that right now
+it just ignores. Also, **libwml** parsing is much faster than the parsing that wesnoth does internally, for a variety
+of reasons, and the final data representation is much more compact than the `config` structure that wesnoth uses.
+However, it would be a lot of work to port wesnoth itself to use **libwml**. Also **libwml** is
+coded in a style that is quite different from wesnoth's codebase, making critical use of some powerful template libraries.
+This is really important for **libwml**, it allows a ton of code-reuse in a parser library like this, and allows the **libwml** codebase to be very compact.
+But wesnoth's codebase historically doesn't use any template stuff like that. The current developers might not be comfortable with this style.
+And while wesnoth is pretty slow to load it's data files, it's not so slow that ripping out the old code is absolutely necessary. A big change like that
+is also likely to break things. So it's not clear it's worth it for the Wesnoth 1 engine.
+
+A final consideration is that **libwml** could be used to to create a tool like **wmllint** which is very precise
+and rigorous. The original **wmllint** tool was just a perl script based on line-by-line regular expressions. It doesn't
+parse WML in at all the same way that the main game does, and it's easy to write WML that is well-formed and which the game will load,
+but which wmllint simply fails to parse. Effectively, **wmllint** is a quick-and-dirty hack, and when it is modifying your files, it is effectively
+using dumb pattern matching and guesswork -- it has no idea of the larger context of the code that it is modifying or
+what it means. A linter based on **libwml** has a full parse tree available when it is making changes, and it knows essentially
+all of the information on the wesnoth wiki about how a WML campaign or scenario is *supposed* to look and what are appropriate values
+for different fields, etc. So it should be easier to get much better results, and adding new lint operations should be straightforward rather than kludgy.
+
+Current
+=======
+
+In mid 2016 I decided to resurrect the project, for the following reasons:
+
+- Even if not all of these prospective applications actually happens, if one or two of them happens, and they are able to share code via some library like
+  **libwml**, it might save everyone a ton of work, and increase maintainability of all of them collectively. It might be that more of them are likely to happen
+  given that something like **libwml** exists.
+- I had an idea that I could make a **wmllint** tool in C++ based on **libwml**, and cross-compile it to javascript via emscripten. Then you could potentially use it
+  from your web browser without installing it, by drag-and-dropping your add-on folder into the page. That seems like a pretty nifty trick in general and I would like
+  know how to make C++ javascript applications like that potentially for other projects as well. This is a good excuse for me to learn how to do that.
+- I have been looking for a good practice project I can use to try out `boost::spirit::x3`, the new version of `boost::spirit`, which uses C++14 and supposedly
+  improves greatly on `boost::spirit::qi`. The original version of **libwml** used `qi`, but it was somewhat messy. This version is an opportunity for me to figure out
+  how `x3` works, while also simplifying and fixing some problems in the old version. (Note: It's currently still using `qi`, I didn't actually port it to `x3` yet.)
+
+Usage
+=====
+
+In wesnoth's code base, all WML is represented by an object called `config`. You can look in the Wesnoth code for how it is defined, but basically it is a dynamic data
+structure that represents the *body* of a WML tag. It contains
+
+- A map of *attribute* keys and values, like this:
+  ```
+    std::map<std::string, attribute_value>;
+  ```
+  This is used to represent fields `X = Y` in a wml tag. `attribute_value` is somewhat like
+  a `boost::variant` which can represent multiple different types of primitive values.
+
+- A map of *config children*, like this:
+  ```
+    std::map<std::string, std::vector<config>>;
+  ```
+  which can represent all of the subtags of a given tag, and keep track of the order of similarly-named tags.
+
+Every WML table is reperesented this way, and most things like multiplayer game settings or save file data is placed into configs in order to be transferred between different
+parts of the engine. The network protocol also uses configs.
+
+The point of the `config` is that it can accomodate any possible WML layout. The list of expected attributes, their possible types of values, and the allowed types of children
+and their number, is all dynamically determined.
+
+In **libwml**, we do it differently. For each possible type of tag, we have a different C++ structure type. Each possible attribute appears as a member variable, and it's type
+reflects the allowed possible values. For each possible type of child tag, there is an appropriate corresponding container structure.
+
+The result is that a tag is not represented by a generic "config" -- when you use **libwml**, you know statically the type of each config based on how it was parsed, you know what fields
+to expect, and you know that any typos or errors would have been caught at the parsing step. Each tag is represented as compactly as possible, because we know statically what it's
+members are and don't have to query dynamically from some `std::map`.
+
+This also makes it much easier to write an emitter. You don't just get some very generic AST object which you have to try to figure out how to emit -- you get a data structure which corresponds
+to a very particular component within the WML AST grammar, and you don't have to query it dynamically to try to figure out what it is so that you know how to treat it. You can write very precise
+functions that handle each component exactly. If you forget to handle one of them, it's a compile-time error rather than some obscure runtime error.
+
+Basically, the decision to make the type of tag known at compile-time, rather than just using a `config` object like wesnoth does, makes parsing harder but emitting easier, and allows
+certain optimizations.
+
+If you want to just have everything parsed to a config-like object, **libwml** can also do that, you just have to leave off the last step of the loading process, which attempts to
+coerce the content into top-level WML.
+
+For more details and examples see documentation.
+
+Requirements and Organization
+=============================
+
+**libwml** is a cross-platform header-only C++14 library. It is supported to build it for windows, linux, OS X, and also to cross-compile it using emscripten.
+
+**libwml** depends on `boost` and an external variant type called `strict_variant`. (See [github](https://github.com/cbeck88/strict-variant))
+
+The **libwml** code can be found in `include/` directory.
+
+The `lib/` directory contains the current version of `strict_variant`. (You could probably build it also with `boost::variant` or `std::variant`, or any other C++11 variant type as you like.)
+
+There is an example executable built with it which is found in the `src/` directory. This executable attempts to parse a wml file or directory, and reports any problems it finds.
+
+The `assets/` directory contains a number of mainline campaigns which were used as test cases.
+
+The example executable can be build using `cmake`. There are also a number of bash scripts in the root of the repository which you can use to get push-button builds with various compilers.
+
+Please note that the example executable is *NOT* part of **libwml** and you don't need to build it to use **libwml**. You only need the stuff in `include`, and possibly
+in `lib/` if you don't have that already.
