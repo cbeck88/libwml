@@ -199,7 +199,7 @@ Requirements and Organization
 
 The **libwml** code can be found in `include/` directory.
 
-The `lib/` directory contains the current version of `strict_variant`. (You could probably build it also with `boost::variant` or `std::variant`, or any other C++11 variant type as you like.)
+The `lib/` directory contains the current version of `strict_variant`. (You could probably build it also with `boost::variant` or `std::variant`, or any other C++11 variant type as you like. The header file `util/variant.hpp` forwards the subset of the interface that we need.)
 
 There is an example executable built with it which is found in the `src/` directory. This executable attempts to parse a wml file or directory, and reports any problems it finds.
 
@@ -210,12 +210,14 @@ The example executable can be build using `cmake`. There are also a number of ba
 Please note that the example executable is *NOT* part of **libwml** and you don't need to build it to use **libwml**. You only need the stuff in `include`, and possibly
 in `lib/` if you don't have that already.
 
-Alternatives
-============
+Alternative Approaches
+======================
 
-It's probably worth also to mention that there wmlindent and several other of the python tools such as wmlxgettext have similar issues. Nobun created a
-second version of wmlxgettext https://forums.wesnoth.org/viewtopic.php?f=10&t=43213, which has documentation here: http://wmlxgettext-unoff.readthedocs.io/en/latest/
-In terms of high level strategy, wmlxgettext2 is somewhere in between the **libwml** strategy and the original line-by-line regex strategy. Basically, wmlxgettext2
+There are several other recent projects that attempted to tackle issues of parsing WML rigorously. It's probably worth also to mention that `wmlindent` and several other of the python tools in the wesnoth source tree, such as `wmlxgettext`, struggle with this in some cases.
+
+Nobun created a second version of `wmlxgettext` https://forums.wesnoth.org/viewtopic.php?f=10&t=43213, which has documentation here: http://wmlxgettext-unoff.readthedocs.io/en/latest/
+
+In terms of high level strategy, `wmlxgettext2` is somewhere in between the **libwml** strategy and the original line-by-line regex strategy. Basically, `wmlxgettext2`
 keeps track of some context for each line, using a state machine, but the transitions of this state machine are still determined by line-by-line regex, if I understand
 correctly. So it has more contextual info than straight regex allows, but less than a full AST. It is sophisticated enough that it supports things like translatable strings within
 lua blocks.
