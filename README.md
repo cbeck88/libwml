@@ -210,6 +210,11 @@ The example executable can be build using `cmake`. There are also a number of ba
 Please note that the example executable is *NOT* part of **libwml** and you don't need to build it to use **libwml**. You only need the stuff in `include`, and possibly
 in `lib/` if you don't have that already.
 
+Licensing and Distribution
+==========================
+
+**libwml** is available under the terms of the WTFPL version 2.0. See `/LICENSE`, or [online](http://www.wtfpl.net).
+
 Alternative Approaches
 ======================
 
