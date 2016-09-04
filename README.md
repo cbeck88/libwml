@@ -63,7 +63,11 @@ Unit {
 }
 ```
 
-**libwml** doesn't go all the way there. It doesn't include an emitter, only a parser. What it does instead is produce an intermediate representation *vaguely* like this:
+This is better because many macros call other macros, etc., and are extremely complex, and so after the WML has been preprocessed, a human doesn't really want to look at it anymore.
+When we translate WML -> WSL, we'd like it to be readable and maintainable as lua after that. (Perhaps the WML source is still maintained, and then it's better to retranslate it when it is
+updated. But either way, human readability and avoiding macro bloat is important to us.)
+
+**libwml** doesn't go all the way there. It doesn't include an emitter, only a parser. It produces C++ data structures which represent a full AST of the WML file. It can produce an intermediate representation *vaguely* like this:
 
 Macros:
 ```
@@ -102,7 +106,7 @@ And while wesnoth is pretty slow to load it's data files, it's not so slow that 
 is also likely to break things. So it's not clear it's worth it for the Wesnoth 1 engine.
 
 A final consideration is that **libwml** could be used to to create a tool like **wmllint** which is very precise
-and rigorous. The original **wmllint** tool was just a perl script based on line-by-line regular expressions. It doesn't
+and rigorous. The original **wmllint** tool was just a python script based on line-by-line regular expressions. It doesn't
 parse WML in at all the same way that the main game does, and it's easy to write WML that is well-formed and which the game will load,
 but which wmllint simply fails to parse. Effectively, **wmllint** is a quick-and-dirty hack, and when it is modifying your files, it is effectively
 using dumb pattern matching and guesswork -- it has no idea of the larger context of the code that it is modifying or
@@ -188,3 +192,15 @@ The example executable can be build using `cmake`. There are also a number of ba
 
 Please note that the example executable is *NOT* part of **libwml** and you don't need to build it to use **libwml**. You only need the stuff in `include`, and possibly
 in `lib/` if you don't have that already.
+
+Alternatives
+============
+
+It's probably worth also to mention that there wmlindent and several other of the python tools such as wmlxgettext have similar issues. Nobun created a
+second version of wmlxgettext https://forums.wesnoth.org/viewtopic.php?f=10&t=43213, which has documentation here: http://wmlxgettext-unoff.readthedocs.io/en/latest/
+In terms of high level strategy, wmlxgettext2 is somewhere in between the **libwml** strategy and the original line-by-line regex strategy. Basically, wmlxgettext2
+keeps track of some context for each line, using a state machine, but the transitions of this state machine are still determined by line-by-line regex, if I understand
+correctly. So it has more contextual info than straight regex allows, but less than a full AST. It is sophisticated enough that it supports things like translatable strings within
+lua blocks.
+
+Another line-by-line regex approach has been attempted by fabi, however I don't know where to find the sources of that right now.
