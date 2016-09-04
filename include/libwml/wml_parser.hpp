@@ -8,8 +8,8 @@
 #define BOOST_SPIRIT_UNICODE
 
 #include <libwml/wml.hpp>
-#include <libwml/wml_stream_ops.hpp>
 #include <libwml/wml_parser_fwd.hpp>
+#include <libwml/wml_stream_ops.hpp>
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -25,8 +25,8 @@
 
 #include <memory>
 #include <ostream> // for pp cursor
-#include <stack>
 #include <sstream>
+#include <stack>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -73,7 +73,8 @@ TODO: Restore this functionality
 
 template <typename iterator>
 void
-report_error(boost::optional<parse_error> & result, const std::string & position, const iterator & it, const iterator & end,
+report_error(boost::optional<parse_error> & result, const std::string & position, const iterator &
+it, const iterator & end,
              const boost::spirit::info & expected_node) {
   result = parse_error{};
 
@@ -94,7 +95,8 @@ BOOST_PHOENIX_ADAPT_FUNCTION(void, report_error_, report_error, 5);
   do {                                                                                             \
     VAR.name(BOOST_PP_STRINGIZE(VAR));                                                             \
     on_error<fail>(VAR,                                                                            \
-                   report_error_(boost::ref(error_info_), wml_cursor_(boost::ref(preprocessor_data)), qi::_3, qi::_2, qi::_4));    \
+                   report_error_(boost::ref(error_info_),
+wml_cursor_(boost::ref(preprocessor_data)), qi::_3, qi::_2, qi::_4));    \
   } while (0)
 */
 
@@ -111,7 +113,6 @@ BOOST_PHOENIX_ADAPT_FUNCTION(void, report_error_, report_error, 4);
     on_error<fail>(VAR,                                                                            \
                    report_error_(wml_cursor_(ref(preprocessor_data)), qi::_3, qi::_2, qi::_4));    \
   } while (0)
-
 
 struct pp_cursor {
   std::string file;
@@ -386,7 +387,8 @@ struct wml_grammar : qi::grammar<Iterator, body(), qi::locals<Key>> {
 namespace wml {
 
 template <typename T, typename Iterator>
-parse_error extract_error(T && grammar, const Iterator & iter, const Iterator & end) {
+parse_error
+extract_error(T && grammar, const Iterator & iter, const Iterator & end) {
   Iterator some = iter + 80;
   std::string context(iter, (some > end) ? end : some);
 
@@ -400,7 +402,7 @@ parse_error extract_error(T && grammar, const Iterator & iter, const Iterator & 
     result.expected_node = "???";
     result.source = "???";
     return result;
-  }  
+  }
 }
 
 inline parse_result

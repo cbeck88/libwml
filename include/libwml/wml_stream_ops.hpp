@@ -126,7 +126,8 @@ operator<<(std::ostream & ss, const parse_error & e) {
 
   ss << "Error at position: " << e.position << "\n"
      << "Expected a node of type '" << e.expected_node << "'\n"
-     << "--- Source Lines ---\n" << e.source << "\n";
+     << "--- Source Lines ---\n"
+     << e.source << "\n";
 
   ss << "-------------------------\n";
   return ss;

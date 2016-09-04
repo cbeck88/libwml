@@ -53,13 +53,15 @@ test_case(const char * str, T & gram, U & root_gram, bool expected = true, bool 
     if (always_show || !expected) { std::cout << foo.str() << std::endl; }
     return expected;
   } else {
-    if (always_show || expected) { foo << extract_error(root_gram, iter, end); std::cout << foo.str() << std::endl; }
+    if (always_show || expected) {
+      foo << extract_error(root_gram, iter, end);
+      std::cout << foo.str() << std::endl;
+    }
     return !expected;
   }
 }
 
 } // end namespace wml
-
 
 /*** Tests ***/
 
@@ -153,8 +155,8 @@ namespace wml {
 
 #define TEST_QUOTED_VALUE(STR)                                                                     \
   do {                                                                                             \
-    wml::test_case(STR, gram.quoted_value, gram, true, false);                                           \
-    wml::test_case("foo = " STR, pair_gram, gram);                                                       \
+    wml::test_case(STR, gram.quoted_value, gram, true, false);                                     \
+    wml::test_case("foo = " STR, pair_gram, gram);                                                 \
   } while (0)
 
 UNIT_TEST(wml_grammar) {
@@ -180,17 +182,17 @@ UNIT_TEST(wml_grammar) {
   wml::test_case(",asd,fgh", gram.no_quotes_no_endl_string, gram, true, false);
   wml::test_case(",asd,fgh\n", gram.no_quotes_no_endl_string, gram, false, false);
   wml::test_case(",asd,fgh\n", gram.no_quotes_no_endl_string >> gram.ws_endl, gram, true, false);
-  wml::test_case(",asd,fgh\n", gram.no_quotes_no_endl_string >> *gram.ws_weak >> gram.ws_endl, gram, true,
-                 false);
+  wml::test_case(",asd,fgh\n", gram.no_quotes_no_endl_string >> *gram.ws_weak >> gram.ws_endl, gram,
+                 true, false);
   wml::test_case("{BAR},asd,fgh", gram.quoted_value, gram, false);
   wml::test_case("{BAR},asd,fgh", gram.unquoted_value, gram, true, false);
   wml::test_case("{BAR},asd,fgh", gram.unquoted_value >> *gram.ws_weak, gram, true, false);
   wml::test_case("\n", gram.ws_endl, gram, true, false);
-  wml::test_case("{BAR},asd,fgh\n", gram.unquoted_value >> *gram.ws_weak >> gram.ws_endl, gram, true,
-                 false);
-  wml::test_case("{BAR},asd,fgh\n", gram.unquoted_value >> *gram.ws_weak
-                                      >> ((&boost::spirit::qi::lit('#')) | gram.ws_endl), gram,
+  wml::test_case("{BAR},asd,fgh\n", gram.unquoted_value >> *gram.ws_weak >> gram.ws_endl, gram,
                  true, false);
+  wml::test_case("{BAR},asd,fgh\n", gram.unquoted_value >> *gram.ws_weak
+                                      >> ((&boost::spirit::qi::lit('#')) | gram.ws_endl),
+                 gram, true, false);
   wml::test_case("{BAR},asd,fgh\n", gram.value, gram, true, false);
   wml::test_case("a={BAR},asd,fgh\n", pair_gram, gram, true, false);
   wml::test_case("user_team_name=_\"Enemies\"", pair_gram, gram);
