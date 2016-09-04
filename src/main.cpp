@@ -1,7 +1,6 @@
 #include "filesystem.hpp"
-#include "parse_error_reporting.hpp"
 #include "unit_test.hpp"
-#include "wml_parser.hpp"
+#include <libwml/wml_parser.hpp>
 
 #include <iostream>
 
@@ -27,7 +26,8 @@ test_file(const std::string & filename) {
 
     return 0;
   } else {
-    std::cout << filename << ": ERROR" << std::endl;
+    std::cerr << filename << ": ERROR" << std::endl;
+    std::cerr << wml_body.err() << std::endl;
     return 1;
   }
 }

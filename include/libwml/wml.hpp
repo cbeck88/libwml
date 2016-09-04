@@ -12,7 +12,6 @@
 
 #include <libwml/util/variant.hpp>
 #include <libwml/wml_pp.hpp>
-#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,6 +42,15 @@ struct body {
   std::vector<node> children; // children
 };
 
+// A "config" is just a sequence of nodes, which are either attributes or tags.
 typedef std::vector<node> config;
+
+// Struct which represents a parse error
+struct parse_error {
+  std::string position;
+  std::string expected_node;
+  std::string source;
+  std::string context;
+};
 
 } // end namespace wml

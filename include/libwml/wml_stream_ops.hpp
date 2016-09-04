@@ -115,4 +115,21 @@ struct config_printer {
   unsigned int indent;
 };
 
+inline std::ostream &
+operator<<(std::ostream & ss, const parse_error & e) {
+  ss << "-------------------------\n";
+  if (e.context.size()) {
+    ss << "Parsing failed\n";
+    ss << "stopped at: \": " << e.context << "...\"\n";
+    ss << "-------------------------\n";
+  }
+
+  ss << "Error at position: " << e.position << "\n"
+     << "Expected a node of type '" << e.expected_node << "'\n"
+     << "--- Source Lines ---\n" << e.source << "\n";
+
+  ss << "-------------------------\n";
+  return ss;
+}
+
 } // end namespace wml
