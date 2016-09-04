@@ -49,8 +49,8 @@ struct parse_result {
 
 // bool strip_preprocessor(std::string& str);
 
-parse_result parse(const std::string & str);
-parse_result parse_document(const std::string & str, const std::string & filename);
+inline parse_result parse(const std::string & str);
+inline parse_result parse_document(const std::string & str, const std::string & filename);
 
 // bool parse_attr(const std::string& str);
 
