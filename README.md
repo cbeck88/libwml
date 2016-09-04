@@ -161,8 +161,25 @@ The result is that a tag is not represented by a generic "config" -- when you us
 to expect, and you know that any typos or errors would have been caught at the parsing step. Each tag is represented as compactly as possible, because we know statically what it's
 members are and don't have to query dynamically from some `std::map`.
 
-This also makes it much easier to write an emitter. You don't just get some very generic AST object which you have to try to figure out how to emit -- you get a data structure which corresponds
-to a very particular component within the WML AST grammar, and you don't have to query it dynamically to try to figure out what it is so that you know how to treat it. You can write very precise
+For instance, in the wesnoth codebase using configs, we might have code like
+
+```
+  if (cfg["name"] == "charlie") { ... }
+```
+
+The expression `cfg["name"]` will attempt to find an attribute `"name"` inside the config, and return a config attribute value reference if it finds this.
+The config attribute value type is a somewhat amorphous type which could represent strings, integers, booleans, etc., and you usually coerce it to the type that you expect, although in this case you don't have to.
+
+In **libwml**, the analogous expression would be
+
+```
+  cfg.name
+```
+
+and the result of this expression would be something like `std::string` or `boost::optional<std::string>`. If you make a typo in `name` or similar, it will be a compile-time error rather than a silent runtime error. And interacting with the `config` is simpler because we know statically the type of the member.
+
+This also makes it much easier to write an emitter. You don't just get some very generic config object which you have to try to figure out how to translate into some programming language -- you get a data structure which corresponds
+to a very particular component within the WML AST grammar, with some particular semantic meaning, and you don't have to query it dynamically to try to figure out what it is so that you know how to treat it. You can write very precise
 functions that handle each component exactly. If you forget to handle one of them, it's a compile-time error rather than some obscure runtime error.
 
 Basically, the decision to make the type of tag known at compile-time, rather than just using a `config` object like wesnoth does, makes parsing harder but emitting easier, and allows
