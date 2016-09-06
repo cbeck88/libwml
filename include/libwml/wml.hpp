@@ -28,6 +28,9 @@ using TextVariant = util::variant<Key, MacroInstance>;
 
 // A wml::Str is text interspersed with macro instances
 using Str = std::vector<TextVariant>;
+// Note: This means we don't support macros as part of the attribute name...
+// otherwise this would have to be std::pair<Str, Str>;
+// Fortunately no one seems to be crazy enough to do that :)
 using Pair = std::pair<Key, Str>;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -42,8 +45,8 @@ struct body {
   std::vector<node> children; // children
 };
 
-// A "config" is just a sequence of nodes, which are either attributes or tags.
-typedef std::vector<node> config;
+// A "config" is just a sequence of nodes, same as interior of "body".
+using config = std::vector<node>;
 
 // Struct which represents a parse error
 struct parse_error {

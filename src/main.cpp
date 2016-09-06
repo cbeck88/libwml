@@ -1,5 +1,8 @@
 #include "filesystem.hpp"
 #include "unit_test.hpp"
+#include <libwml/wesnoth_ast.hpp>
+#include <libwml/coerce.hpp>
+#include <libwml/coerce_log.hpp>
 #include <libwml/wml_parser.hpp>
 
 #include <iostream>
@@ -7,7 +10,6 @@
 // test if we can parse a file as wml
 int
 test_file(const std::string & filename) {
-  // bool verbose = false
   if (filename.substr(filename.size() - 4) != ".cfg") { return 0; }
 
   std::cout << "Scanning file '" << filename << "'" << std::endl;
@@ -19,10 +21,14 @@ test_file(const std::string & filename) {
   // }
 
   if (auto wml_body = wml::parse_document(storage, filename)) {
-    static_cast<void>(wml_body);
-    // std::cerr << filename << ": PARSED_VALID_WML:" << std::endl;
+    std::cerr << filename << ": PARSED_VALID_WML:" << std::endl;
 
-    // test_ast(*wml_body, verbose);
+    wml::coerce_log log;
+    wml::top_level ast;
+
+    wml::coerce_to_tag(ast, *wml_body, &log);
+
+    log.write(std::cerr);
 
     return 0;
   } else {

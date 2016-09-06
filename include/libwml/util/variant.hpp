@@ -4,6 +4,7 @@
 
 #include <strict_variant/variant.hpp>
 
+namespace wml {
 namespace util {
 
 template <typename... types>
@@ -33,3 +34,4 @@ get(const variant<types...> * v) {
 // using get_or_default = strict_variant::get_or_default;
 
 } // end namespace util
+} // end namespace wml

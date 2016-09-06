@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/optional.hpp>
+#include <libwml/util/optional.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <string>
 #include <vector>
@@ -8,6 +8,8 @@
 // In Wesnoth, version numbers are often represented as e.g. "1.10", "1.11+dev", etc.
 // version_number struct is able to represent such versions, and sort them, where,
 // a + or - at the end affects the sorting properly.
+
+namespace wml {
 
 struct version_number {
   std::vector<int> nums;
@@ -42,7 +44,7 @@ struct version_number {
   bool operator>=(const version_number & other) const { return other <= *this; }
 };
 
-boost::optional<version_number>
+inline util::optional<version_number>
 parse_version(const std::string & str) {
   using str_ti = std::string::const_iterator;
 
@@ -54,12 +56,12 @@ parse_version(const std::string & str) {
   qi::parse(iter, end, qi::int_ % qi::char_('.'), temp);
 
   for (int i : temp) {
-    if (i < 0) { return boost::none; }
+    if (i < 0) { return {}; }
   }
   while (temp.size() && (temp.back() == 0)) {
     temp.resize(temp.size() - 1);
   }
-  if (!temp.size()) { return boost::none; }
+  if (!temp.size()) { return {}; }
 
   std::string string_part{iter, end};
   char separator = '\0';
@@ -70,3 +72,5 @@ parse_version(const std::string & str) {
 
   return version_number{std::move(temp), separator, std::move(string_part)};
 }
+
+} // end namespace wml

@@ -10,18 +10,10 @@
 #include <libwml/wml.hpp>
 #include <libwml/wml_parser_fwd.hpp>
 #include <libwml/wml_stream_ops.hpp>
+#include <libwml/util/optional.hpp>
+#include <libwml/util/spirit.hpp>
 
-#include <boost/config/warning_disable.hpp>
-#include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/fusion/include/std_pair.hpp>
 #include <boost/preprocessor/stringize.hpp>
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_fusion.hpp>
-#include <boost/spirit/include/phoenix_object.hpp>
-#include <boost/spirit/include/phoenix_operator.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
-#include <boost/spirit/include/qi.hpp>
-#include <boost/variant/recursive_variant.hpp>
 
 #include <memory>
 #include <ostream> // for pp cursor
@@ -73,7 +65,7 @@ TODO: Restore this functionality
 
 template <typename iterator>
 void
-report_error(boost::optional<parse_error> & result, const std::string & position, const iterator &
+report_error(util::optional<parse_error> & result, const std::string & position, const iterator &
 it, const iterator & end,
              const boost::spirit::info & expected_node) {
   result = parse_error{};
@@ -250,7 +242,7 @@ struct wml_grammar : qi::grammar<Iterator, body(), qi::locals<Key>> {
 
   qi::rule<Iterator, qi::unused_type()> ws_weak, ws_endl, ws_all, ws_skip_to_eol, ws_consume_to_eol;
 
-  boost::optional<parse_error> error_info_;
+  util::optional<parse_error> error_info_;
 
   wml_grammar(pp_database & preprocessor_data)
     : wml_grammar::base_type(wml, "wml") {
