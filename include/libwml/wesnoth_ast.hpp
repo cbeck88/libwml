@@ -854,34 +854,31 @@ DECLARE_WML_TAG(if_tag,
 namespace wml { struct action_tag; }
 // action_tag is used to represent tags that can only hold actions_wml, like [then] [else] [command] etc.
 
-namespace wml { static const char * const if_tag_child_then_tag_key = "then"; }
-namespace wml { static const char * const if_tag_child_else_tag_key = "else"; }
-namespace wml { typedef child_vector<util::recursive_wrapper<action_tag>, &if_tag_child_then_tag_key> if_tag_child_then_type; }
-namespace wml { typedef child_vector<util::recursive_wrapper<action_tag>, &if_tag_child_else_tag_key> if_tag_child_else_type; }
-BOOST_FUSION_DEFINE_STRUCT( (wml), if_tag,
-  (conditional_wml, conditionals)
-  (wml::if_tag_child_then_type, then_children)
-  (wml::if_tag_child_else_type, else_children))
+MAKE_HETEROGENOUS_SEQUENCE(if_wml,
+  (util::recursive_wrapper<action_tag>, "then")
+  (util::recursive_wrapper<action_tag>, "else"));
+
+DECLARE_WML_TAG_AND_NAME(if_tag, "if",
+  (if_wml, children));
 
 namespace wml { struct case_tag; }
 
-namespace wml { static const char * const switch_tag_variable_key = "variable"; }
-namespace wml { static const char * const switch_tag_child_case_tag_key = "case"; }
-namespace wml { static const char * const switch_tag_child_else_tag_key = "else"; }
-namespace wml { typedef child_vector<util::recursive_wrapper<case_tag>, &switch_tag_child_case_tag_key> switch_tag_child_case_type; }
-namespace wml { typedef child_vector<util::recursive_wrapper<action_tag>, &switch_tag_child_else_tag_key> switch_tag_child_else_type; }
-BOOST_FUSION_DEFINE_STRUCT( (wml), switch_tag,
-  (string_val< & wml::switch_tag_variable_key >, variable)
-  (wml::switch_tag_child_case_type, case_children)
-  (wml::switch_tag_child_else_type, else_children))
+MAKE_HETEROGENOUS_SEQUENCE(switch_wml,
+  (util::recursive_wrapper<case_tag>, "case")
+  (util::recursive_wrapper<action_tag>, "else"));
+
+DECLARE_WML_TAG_AND_NAME(switch_tag, "switch",
+  (string_val, variable)
+  (switch_wml, children));
 
 namespace wml { struct while_tag; }
 
-namespace wml { static const char * const while_tag_child_do_key = "do"; }
-namespace wml { typedef child_vector<util::recursive_wrapper<action_tag>, &while_tag_child_do_key> while_tag_child_do_type; }
-BOOST_FUSION_DEFINE_STRUCT( (wml), while_tag,
+MAKE_HETEROGENOUS_SEQUENCE(while_wml,
+  (util::recursive_wrapper<action_tag>, "do"));
+
+DECLARE_WML_TAG_AND_NAME(while_tag, "while",
   (conditional_wml, conditionals)
-  (wml::while_tag_child_do_type, do_children))
+  (while_wml, children));
 
 DECLARE_WML_TAG(message_option,
   (string_val, message)

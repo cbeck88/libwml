@@ -97,14 +97,9 @@ WML campaigns automatically as FFL appropriate for the wesnoth 2 project.
 Potentially, something like **libwml** could be used inside wesnoth itself, because it would lead to more
 rigorous parsing and error reporting. The game itself would be capable of catching typo problems that right now
 it just ignores. Also, **libwml** parsing is much faster than the parsing that wesnoth does internally, for a variety
-of reasons, and the final data representation is much more compact than the `config` structure that wesnoth uses.
-However, it would be a lot of work to port wesnoth itself to use **libwml**. Also **libwml** is
-coded in a style that is quite different from wesnoth's codebase, making critical use of some powerful template libraries.
-This is really important for **libwml**, it allows a ton of code-reuse in a parser library like this, and allows the **libwml** codebase to be very compact.
-But wesnoth's codebase historically doesn't use any template stuff like that. The current developers might not be comfortable with this style.
-And while wesnoth is pretty slow to load it's data files, it's not so slow that ripping out the old code is absolutely necessary. A big change like that
-is also likely to break things. So it's not clear it's worth it for the Wesnoth 1 engine. Also, I hear some wesnoth developers really like MSVC, and I'm not
-particularly interested in arguing about it.
+of reasons.
+However, it would be a lot of work to port wesnoth itself to use **libwml**. Also **libwml** is not really that mature right now, it is quite experimental.
+And it places much more demands on the C++ compiler for recent C++ features than wesnoth does. So it's not clear that this is a good idea right now.
 
 A final consideration is that **libwml** could be used to to create a tool like **wmllint** which is very precise
 and rigorous. The original **wmllint** tool was just a python script based on line-by-line regular expressions. It doesn't
@@ -203,7 +198,7 @@ of `__VA_ARGS__` is seriously broken and not standards conforming, and working a
 This is a long standing MSVC bug that microsoft seems to have no interest in fixing. There are similar issues in the MSVC implementation of template instantiation.
 These features are crucial for **libwml**, without which the size of the library would be much larger and it would be much harder to maintain.
 
-To build on windows, I recommend to use mingw, or if you want to use visual studio, use it with clang.
+To build on windows, I recommend to use mingw, or if you want to use visual studio, I recommend to use it with clang.
 
 **libwml** depends on:
 - `boost >= 1.60`

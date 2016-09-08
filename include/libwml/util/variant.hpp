@@ -33,5 +33,19 @@ get(const variant<types...> * v) {
 
 // using get_or_default = strict_variant::get_or_default;
 
+// Unwrap_type
+template <typename T>
+struct unwrap_type {
+  using type = T;
+};
+
+template <typename T>
+struct unwrap_type<recursive_wrapper<T>> {
+  using type = T;
+};
+
+template <typename T>
+using unwrap_type_t = typename unwrap_type<T>::type;
+
 } // end namespace util
 } // end namespace wml

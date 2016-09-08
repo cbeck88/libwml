@@ -119,20 +119,23 @@ static_assert(true, "")
 namespace wml {
   struct hs_dummy {};
 
-  template <typename TL>
+  template <const char * const *, typename TL>
   struct make_heterogenous_sequence;
 
   template <typename... Ts>
-  struct make_heterogenous_sequence<mpl::typelist<hs_dummy, Ts...>> {
-    using type = heterogenous_sequence<Ts...>;
+  struct make_heterogenous_sequence<const char * const * strings, mpl::typelist<hs_dummy, Ts...>> {
+    using type = heterogenous_sequence<strings, Ts...>;
   };
 } // end namespace wml
 
-#define FETCH_TYPE(TYPE, NAME) , TYPE
+#define COMMA_FIRST(F, S) , F
+#define SECOND_COMMA(F, S) S ,
 
 #define MAKE_HETEROGENOUS_SEQUENCE(NAME, SEQ)                                  \
 namespace wml {                                                                \
-  using NAME = typename make_heterogenous_sequence< mpl::typelist< hs_dummy    \
-                                      FOR_EACH(FETCH_TYPE, SEQ)                \
-                                                    > >::type;                 \
+  static constexpr const char * NAME##_strings [] = { FOR_EACH(SECOND_COMMA, SEQ) } ; \
+                                                                               \
+  using NAME = typename make_heterogenous_sequence<  NAME##_strings , mpl::typelist< hs_dummy    \
+                                      FOR_EACH(COMMA_FIRST, SEQ)     \
+                                                    >>::type; \
 }
