@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libwml/util/optional.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <libwml/util/optional.hpp>
 #include <string>
 #include <vector>
 

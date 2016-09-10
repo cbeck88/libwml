@@ -1,8 +1,8 @@
 #include "filesystem.hpp"
 #include "unit_test.hpp"
-#include <libwml/wesnoth_1_12.hpp>
 #include <libwml/coerce.hpp>
 #include <libwml/coerce_log.hpp>
+#include <libwml/wesnoth_1_12.hpp>
 #include <libwml/wml_parser.hpp>
 
 #include <iostream>

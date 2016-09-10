@@ -28,9 +28,7 @@ namespace traits {
 
 template <typename T>
 struct child_container<std::vector<T>> : std::true_type {
-  static bool allows_tag(const wml::body & b) {
-    return b.name == tag<T>::name();
-  }
+  static bool allows_tag(const wml::body & b) { return b.name == tag<T>::name(); }
 
   static void insert_tag(std::vector<T> & v, const wml::body & b, coerce_log * log) {
     v.resize(v.size() + 1);
@@ -41,11 +39,10 @@ struct child_container<std::vector<T>> : std::true_type {
 // Sometimes we need to use recursive wrapper if there are cycles in the AST structure
 template <typename T>
 struct child_container<std::vector<util::recursive_wrapper<T>>> : std::true_type {
-  static bool allows_tag(const wml::body & b) {
-    return b.name == tag<T>::name();
-  }
+  static bool allows_tag(const wml::body & b) { return b.name == tag<T>::name(); }
 
-  static void insert_tag(std::vector<util::recursive_wrapper<T>> & v, const wml::body & b, coerce_log * log) {
+  static void insert_tag(std::vector<util::recursive_wrapper<T>> & v, const wml::body & b,
+                         coerce_log * log) {
     v.resize(v.size() + 1);
     traits::tag<T>::coerce(v.back().get(), b.children, log);
   }

@@ -7,11 +7,11 @@
 #define BOOST_SPIRIT_USE_PHOENIX_V3
 #define BOOST_SPIRIT_UNICODE
 
+#include <libwml/util/optional.hpp>
+#include <libwml/util/spirit.hpp>
 #include <libwml/wml.hpp>
 #include <libwml/wml_parser_fwd.hpp>
 #include <libwml/wml_stream_ops.hpp>
-#include <libwml/util/optional.hpp>
-#include <libwml/util/spirit.hpp>
 
 #include <boost/preprocessor/stringize.hpp>
 

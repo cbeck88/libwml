@@ -15,5 +15,5 @@
 #include <boost/spirit/include/qi.hpp>
 
 namespace wml {
-  namespace qi = boost::spirit::qi;
+namespace qi = boost::spirit::qi;
 } // end namespace wml

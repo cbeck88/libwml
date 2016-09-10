@@ -1,13 +1,13 @@
 #pragma once
 
-#include <libwml/wml.hpp>
-#include <libwml/coercer.hpp>
+#include <cassert>
 #include <libwml/coerce_log.hpp>
+#include <libwml/coercer.hpp>
 #include <libwml/traits/child_container.hpp>
 #include <libwml/traits/tag.hpp>
 #include <libwml/util/optional.hpp>
 #include <libwml/util/variant.hpp>
-#include <cassert>
+#include <libwml/wml.hpp>
 #include <map>
 #include <string>
 #include <type_traits>
@@ -38,7 +38,7 @@ struct tag_base : std::true_type {
   static void coerce(T & t, const wml::config & cfg, coerce_log * log) {
     coercer c{cfg, log};
     t.visit_extended(c);
-    c.report_unused(); 
+    c.report_unused();
   }
 };
 
@@ -55,24 +55,21 @@ struct heterogenous_sequence_base {
 
   static int find_tag(const std::string & s) {
     int result = 0;
-    while (result < T::num_types && T::names()[result] != s) { ++result; }
+    while (result < T::num_types && T::names()[result] != s) {
+      ++result;
+    }
     return result;
   }
 
-  static bool has_tag(const std::string & s) {
-    return find_tag(s) < T::num_types;
-  }
+  static bool has_tag(const std::string & s) { return find_tag(s) < T::num_types; }
 
-  static const char * name(const var_t & v) {
-    return T::names()[v.which()];
-  }
+  static const char * name(const var_t & v) { return T::names()[v.which()]; }
 
   // Visitor for var_t which applies the coerce function of current tag type.
   struct coerce_visitor {
     explicit coerce_visitor(const wml::config & cfg, coerce_log * log)
       : cfg_(cfg)
-      , log_(log)
-    {}
+      , log_(log) {}
 
     const wml::config & cfg_;
     coerce_log * log_;
@@ -90,7 +87,7 @@ struct heterogenous_sequence_base {
 
   template <int... Is>
   struct helper<std::integer_sequence<int, Is...>> {
-    using emplacer_fcn = void(*)(var_t &);
+    using emplacer_fcn = void (*)(var_t &);
 
     template <int idx>
     static void emplace_impl(var_t & v) {
@@ -100,9 +97,7 @@ struct heterogenous_sequence_base {
     static var_t as_variant(int idx, const wml::config & cfg, coerce_log * log) {
       var_t result;
 
-      constexpr std::array<emplacer_fcn, sizeof...(Is)> fcns = {{
-        &emplace_impl<Is>...
-      }};
+      constexpr std::array<emplacer_fcn, sizeof...(Is)> fcns = {{&emplace_impl<Is>...}};
 
       fcns[idx](result);
       coerce_visitor vis{cfg, log};

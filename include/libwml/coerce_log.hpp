@@ -12,8 +12,8 @@
 
 #include <libwml/traits/attribute.hpp>
 #include <libwml/traits/tag.hpp>
-#include <libwml/wml.hpp>
 #include <libwml/util/lexical_cast.hpp>
+#include <libwml/wml.hpp>
 
 namespace wml {
 
@@ -25,9 +25,7 @@ struct coerce_incident {
   void write(std::ostream & s) const {
     s << "At: " << this->where << "\n";
     s << "Error: " << this->what << "\n";
-    if (this->source.size()) {
-      s << "Source: " << this->source << "\n";
-    }
+    if (this->source.size()) { s << "Source: " << this->source << "\n"; }
     s << std::endl;
   }
 };
@@ -37,7 +35,9 @@ struct coerce_log {
   std::vector<std::string> context_;
 
   void push_context(std::string s) { context_.emplace_back(std::move(s)); }
-  void pop_context() { if (context_.size()) { context_.resize(context_.size() - 1); } }
+  void pop_context() {
+    if (context_.size()) { context_.resize(context_.size() - 1); }
+  }
 
   std::string format_context() const {
     std::string result;
@@ -51,7 +51,8 @@ struct coerce_log {
   void report_attribute_fail(std::string key, const wml::Str & source, std::string diagnostic) {
     coerce_incident i;
     i.where = this->format_context() + " Key: " + std::move(key); // Add line info from wml::Str?
-    i.what = "Expected: " + wml::traits::attribute<T>::debug_name() + ".\n      " + std::move(diagnostic);
+    i.what =
+      "Expected: " + wml::traits::attribute<T>::debug_name() + ".\n      " + std::move(diagnostic);
     i.source = util::lexical_cast_default<std::string>(source);
 
     incidents_.emplace_back(std::move(i));
@@ -61,7 +62,8 @@ struct coerce_log {
   void report_child_missing(std::string key, std::string diagnostic) {
     coerce_incident i;
     i.where = this->format_context();
-    i.what = "Expected child of type: " + wml::traits::tag<T>::name() + ", with name '" + key + "'.\n      " + std::move(diagnostic);
+    i.what = "Expected child of type: " + wml::traits::tag<T>::name() + ", with name '" + key
+             + "'.\n      " + std::move(diagnostic);
     i.source = "";
 
     incidents_.emplace_back(std::move(i));
@@ -109,7 +111,9 @@ struct log_context {
     if (log_) { log_->push_context(std::move(key)); }
   }
 
-  ~log_context() { if (log_) { log_->pop_context(); } }
+  ~log_context() {
+    if (log_) { log_->pop_context(); }
+  }
 };
 
 } // end namespace wml

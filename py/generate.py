@@ -13,6 +13,12 @@
 # This struct has corresponding members for each attribute, and "container"
 # members for each permitted type of child tag. (Several possibilities here.)
 #
+# Note: A limitation of XML is that < and > characters must be escaped.
+# However, these characters are needed for C++ template types, and the escapes
+# greatly reduce readability.
+# Therefore, in any attribute named 'type', we substitute '<' for '[' and '>'
+# for ']', so that template types may be written in XML using square brackets.
+#
 # Expected XML Format:
 # ====================
 #
@@ -31,8 +37,8 @@
 # Example:
 #
 #   <tag name="foo" cppname="foo_tag">
-#      <member type="int_val" name="x"/>
-#      <member type="int_val" name="y"/>
+#     <member type="int_val" name="x"/>
+#     <member type="int_val" name="y"/>
 #   </tag>
 #
 # Generated code:
@@ -81,11 +87,11 @@
 #
 # Example:
 #
-#   <type_alias type="util::recursive_wrapper<unit_filter_tag>" name="unit_filter_wrapper" />
+#   <type_alias type="util::recursive_wrapper[unit_filter_tag]" name="unit_filter_wrapper" />
 #
 # Generated code:
 #
-#   using unit_filter_wrapper = "util::recursive_wrapper<unit_filter_tag>";
+#   using unit_filter_wrapper = util::recursive_wrapper<unit_filter_tag>;
 # 
 #
 #
@@ -110,7 +116,7 @@
 #   <group name="foo"> <member type="int_val" name="x" /> </group>
 #   <group name="bar"> <member type="int_val" name="y" /> <group name="foo" /> </group>
 #
-#   <tag name="baz"> <member type="string_val" name="color"> <group name="baz" /> </tag>
+#   <tag name="baz"> <member type="string_val" name="color" /> <group name="baz" /> </tag>
 #
 # Generated code:
 #
@@ -157,19 +163,14 @@
 # Generated code:
 #
 #   struct action_wml : heterogenous_sequence_base<action_wml> {
-#     static constexpr num_type = 3;
+#     static constexpr int num_types = 3;
 #     static constexpr const char * const * names() {
 #       static const char * instance[] = { "kill", "recall", "set_recruit" };
 #       return instance;
 #     }
 #     using var_t = util::variant<kill_tag, recall_tag, set_recruit_tag>;
 #   };
-#
-# Note: A limitation of XML is that < and > characters must be escaped.
-# However, these characters are needed for C++ template types, and the escapes
-# greatly reduce readability.
-# Therefore, in any attribute named 'type', we substitute '<' for '[' and '>'
-# for ']', so that template types may be written in XML using square brackets.
+
 
 import sys
 import argparse

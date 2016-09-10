@@ -15,7 +15,8 @@ namespace wml {
 namespace util {
 
 template <typename T, typename U>
-util::optional<T> lexical_cast(const U & u) {
+util::optional<T>
+lexical_cast(const U & u) {
   T t;
   std::stringstream ss;
   if (ss << u && ss >> t) {
@@ -26,7 +27,8 @@ util::optional<T> lexical_cast(const U & u) {
 }
 
 template <typename T>
-util::optional<T> lexical_cast(const std::string & str) {
+util::optional<T>
+lexical_cast(const std::string & str) {
   T t;
   std::stringstream ss{str};
   if (ss >> t) {
@@ -41,7 +43,8 @@ util::optional<T> lexical_cast(const std::string & str) {
 }
 
 template <typename T, typename U>
-T lexical_cast_default(U && u, T def = T()) {
+T
+lexical_cast_default(U && u, T def = T()) {
   T result;
   std::stringstream ss;
   if (ss << std::forward<U>(u) && ss >> result) {

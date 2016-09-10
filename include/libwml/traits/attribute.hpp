@@ -3,8 +3,8 @@
 #include <string>
 #include <type_traits>
 
-#include <libwml/wml.hpp>
 #include <libwml/util/optional.hpp>
+#include <libwml/wml.hpp>
 
 /***
  * The "attribute" trait is used to identify which types represent WML attributes.

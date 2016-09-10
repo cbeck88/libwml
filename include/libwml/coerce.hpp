@@ -1,13 +1,14 @@
 #pragma once
 
-#include <libwml/traits/tag.hpp>
 #include <libwml/coerce_log.hpp>
+#include <libwml/traits/tag.hpp>
 #include <libwml/wml.hpp>
 
 namespace wml {
 
 template <typename T>
-T coerce(const wml::config & cfg, coerce_log * log = nullptr) {
+T
+coerce(const wml::config & cfg, coerce_log * log = nullptr) {
   static_assert(traits::tag<T>::value, "Target type must be a wml tag");
 
   T result;
@@ -16,7 +17,8 @@ T coerce(const wml::config & cfg, coerce_log * log = nullptr) {
 }
 
 template <typename T>
-T coerce(const wml::body & b, coerce_log * log = nullptr) {
+T
+coerce(const wml::body & b, coerce_log * log = nullptr) {
   return coerce<T>(b.children, log);
 }
 
