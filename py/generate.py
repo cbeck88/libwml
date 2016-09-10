@@ -155,6 +155,21 @@
 #   </heterogenous_sequence>
 #
 # Generated code:
+#
+#   struct action_wml : heterogenous_sequence_base<action_wml> {
+#     static constexpr num_type = 3;
+#     static constexpr const char * const * names() {
+#       static const char * instance[] = { "kill", "recall", "set_recruit" };
+#       return instance;
+#     }
+#     using var_t = util::variant<kill_tag, recall_tag, set_recruit_tag>;
+#   };
+#
+# Note: A limitation of XML is that < and > characters must be escaped.
+# However, these characters are needed for C++ template types, and the escapes
+# greatly reduce readability.
+# Therefore, in any attribute named 'type', we substitute '<' for '[' and '>'
+# for ']', so that template types may be written in XML using square brackets.
 
 import sys
 import argparse
@@ -395,16 +410,16 @@ class Sequence(object):
     w.out('struct ' + self.name + ' : heterogenous_sequence_base<' + self.name + '> {')
     w.indent()
     w.newline()
-    w.outln('static constexpr int num_types = ' + + ';')
+    w.outln('static constexpr int num_types = ' + len(self.types) + ';')
     w.out('static constexpr const char * const * names () {')
     w.indent()
     w.newline()
-    w.outln('static constexpr const char * instance[] = { ' + + ' };')
+    w.outln('static constexpr const char * instance[] = { ' + ', '.join(self.strings) + ' };')
     w.out('return instance;')
     w.unindent()
     w.newline()
     w.outln('}')
-    w.out('using var_t = util::variant<' + + '>;')
+    w.out('using var_t = util::variant<' + ', '.join(self.types) + '>;')
 
     w.unindent()
     w.newline()
