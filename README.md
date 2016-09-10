@@ -193,10 +193,9 @@ Requirements and Organization
 **libwml** is a cross-platform header-only C++14 library. It is supported to build it for windows, linux, OS X, and also to cross-compile it using emscripten,
 using `gcc >= 5.0`, and `clang >= 3.8`.
 
-It is not supported to build it using MSVC. There are several bugs in MSVC templates and preprocessor capabilties, most glaringly, that the MSVC implementation
-of `__VA_ARGS__` is seriously broken and not standards conforming, and working around it is too tedious and difficult for me to really be interested.
-This is a long standing MSVC bug that microsoft seems to have no interest in fixing. There are similar issues in the MSVC implementation of template instantiation.
-These features are crucial for **libwml**, without which the size of the library would be much larger and it would be much harder to maintain.
+It is not supported to build it using MSVC. Occasionally, we use standard C++11 features that MSVC still has not implemented, or has implemented poorly. At some
+earlier revisions, we made critical use of `__VA_ARGS__` for certain purposes, or more complex C++11 template and `constexpr` constructions, which are known not to work in MSVC.
+Since moving to the python-based generator model, it's possible that it now works with MSVC, but bottom line is I'm not testing it.
 
 To build on windows, I recommend to use mingw, or if you want to use visual studio, I recommend to use it with clang.
 

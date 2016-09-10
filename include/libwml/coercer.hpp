@@ -26,7 +26,7 @@ struct coercer {
   // Attribute parsing
   template <typename T>
   std::enable_if_t<traits::attribute<T>::value> operator()(const char * key, T & value) {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (const wml::Pair * p = util::get<wml::Pair>(&cfg_[idx])) {
           if (p->first == key) {
@@ -47,7 +47,7 @@ struct coercer {
   template <typename T, typename D>
   std::enable_if_t<traits::attribute<T>::value> operator()(const char * key, T & value,
                                                            D && default_value_func) {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (const wml::Pair * p = util::get<wml::Pair>(&cfg_[idx])) {
           if (p->first == key) {
@@ -74,7 +74,7 @@ struct coercer {
   // (Individual) child tag
   template <typename T>
   std::enable_if_t<traits::tag<T>::value> operator()(const char * key, T & value) {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (const wml::body * b = util::get<wml::body>(&cfg_[idx])) {
           if (key == b->name) {
@@ -95,7 +95,7 @@ struct coercer {
   // optional child
   template <typename T>
   std::enable_if_t<traits::tag<T>::value> operator()(const char * key, util::optional<T> & value) {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (const wml::body * b = util::get<wml::body>(&cfg_[idx])) {
           if (key == b->name) {
@@ -122,7 +122,7 @@ struct coercer {
   // Child container
   template <typename T>
   std::enable_if_t<traits::child_container<T>::value> operator()(const char * key, T & value) {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (const wml::body * b = util::get<wml::body>(&cfg_[idx])) {
           if (traits::child_container<T>::allows_tag(*b)) {
@@ -136,7 +136,7 @@ struct coercer {
   }
 
   void report_unused() const {
-    for (int idx = 0; idx < cfg_.size(); ++idx) {
+    for (unsigned idx = 0; idx < cfg_.size(); ++idx) {
       if (!used_[idx]) {
         if (log_) { log_->report_unused(cfg_[idx]); }
       }

@@ -181,6 +181,10 @@ import os
 def error(message):
   raise Exception(message)
 
+def node_error(node, message):
+  ET.dump(node)
+  error(message)
+
 def replace_type_characters(str):
   return str.replace('[', '<').replace(']', '>')
 
@@ -217,7 +221,7 @@ class Writer(object):
 class Member(object):
   def __init__(self, child):
     if child.tag != 'member':
-      error("Expected xml tag of type 'member', found '" + child.tag + "'")
+      node_error(child, "Expected xml tag of type 'member', found '" + child.tag + "'")
 
     self.type = child.get('type')
     self.name = child.get('name')
@@ -225,9 +229,9 @@ class Member(object):
     self.alias = child.get('alias')
 
     if self.type is None:
-      error("Member had no type")
+      node_error(child, "Member had no type")
     if self.name is None:
-      error("Member had no name")
+      node_error(child, "Member had no name")
 
     self.type = replace_type_characters(self.type)
 
@@ -264,12 +268,12 @@ def member_list(child, groups):
     elif m.tag == 'group':
       gname = m.get('name')
       if gname is None:
-        error("Missing group name")
-      if groups[gname] is None:
-        error("Unknown group name: '" + gname + "'")
+        node_error(child, "Missing group name")
+      if gname not in groups:
+        node_error(child, "Unknown group name: '" + gname + "'")
       result = result + groups[gname]
     else:
-      error('Unexpected child node: ' + m.tag)
+      node_error(child, 'Unexpected child node: ' + m.tag)
   return result
 
 
@@ -278,11 +282,11 @@ def member_list(child, groups):
 class Tag(object):
   def __init__(self, child, groups):
     if child.tag != 'tag':
-      error("Expected xml node of type 'tag', found '" + child.tag + "'")
+      node_error(child, "Expected xml node of type 'tag', found '" + child.tag + "'")
 
     self.name = child.get('name')
     if self.name is None:
-      error("Tag did not have a name")
+      node_error(child, "Tag did not have a name")
 
     self.cppname = child.get('cppname')
     if self.cppname is None:
@@ -375,6 +379,8 @@ class Tag(object):
     w.outln('} // end namespace traits')
 
   def write(self, w):
+    w.newline();
+    w.outln('// tag "' + self.cppname + '"')
     self.define_struct(w)
     w.outln('')
     self.define_trait(w)
@@ -386,21 +392,21 @@ class Sequence(object):
   def __init__(self, child):
     self.name = child.get("name")
     if self.name is None:
-      error("Expected 'heterogenous_sequence' to have a 'name'")
+      node_error(child, "Expected 'heterogenous_sequence' to have a 'name'")
     self.strings = []
     self.types = []
 
     for c in child:
-      if c.name != "tag":
-        error("Unexpected member of 'heterogenous_sequence', expected <tag> found <" + c.name + ">")
+      if c.tag != "tag":
+        node_error(child, "Unexpected node in 'heterogenous_sequence', expected <tag> found <" + c.name + ">")
       else:
         my_alias = c.get('alias')
         if my_alias is None:
-          error("Missing 'alias' key of heterogenous_sequence tag child")
+          node_error(child, "Missing 'alias' key of heterogenous_sequence tag node")
 
         my_type = c.get('type')
         if my_type is None:
-          error("Missing 'type' key of heterogenous_sequence tag child")
+          node_error(child, "Missing 'type' key of heterogenous_sequence tag node")
 
         my_type = replace_type_characters(my_type)
 
@@ -408,15 +414,14 @@ class Sequence(object):
         self.types = self.types + [my_type]
 
   def define_struct(self, w):
-    w.out('struct ' + self.name + ' : heterogenous_sequence_base<' + self.name + '> {')
+    w.out('struct ' + self.name + '_meta {')
     w.indent()
     w.newline()
-    w.outln('static constexpr int num_types = ' + len(self.types) + ';')
-    w.out('static constexpr const char * const * names () {')
+    w.outln('static constexpr int num_types = ' + str(len(self.types)) + ';')
+    w.out('static constexpr std::array<const char *, num_types> names() {')
     w.indent()
     w.newline()
-    w.outln('static constexpr const char * instance[] = { ' + ', '.join(self.strings) + ' };')
-    w.out('return instance;')
+    w.out('return {{ ' + ', '.join([ '"' + x + '"' for x in self.strings]) + ' }};')
     w.unindent()
     w.newline()
     w.outln('}')
@@ -424,20 +429,23 @@ class Sequence(object):
 
     w.unindent()
     w.newline()
-    w.outln('}')    
+    w.outln('};')
+    w.newline()
+    w.outln('struct ' + self.name + " : heterogenous_sequence<" + self.name + "_meta> {};")
 
   def define_trait(self, w):
     w.outln('namespace traits {')
     w.newline()
 
     w.outln('template <>')
-    w.out('struct child_container<' + self.name + '> : hs_container_base<' + self.cppname + '> {};')
-
+    w.outln('struct child_container<' + self.name + '> : hs_trait_base<' + self.name + '> {};')
     w.newline()
     w.outln('} // end namespace traits')
 
 
   def write(self, w):
+    w.newline();
+    w.outln('// heterogenous_sequence "' + self.name + '"')
     self.define_struct(w)
     w.outln('')
     self.define_trait(w)
@@ -489,9 +497,11 @@ class Generator(object):
     self.w.outln('#include <libwml/wml.hpp>')
     self.w.outln('#include <libwml/attributes.hpp>')
     self.w.outln('#include <libwml/child_containers.hpp>')
+    self.w.outln('#include <libwml/tags.hpp>')
     self.w.outln('#include <libwml/util/variant.hpp>')
     self.w.outln('#include <libwml/util/optional.hpp>')
     self.w.outln('')
+    self.w.outln('#include <array>')
     self.w.outln('#include <type_traits>')
     self.w.outln('#include <utility>')
     self.w.outln('#include <vector>')
@@ -504,10 +514,10 @@ class Generator(object):
   def make_type_alias(self, c):
     my_name = c.get('name')
     if my_name is None:
-      error("Missing 'name' attribute of type_alias node")
+      node_error(c, "Missing 'name' attribute of type_alias node")
     my_type = c.get('type')
     if my_type is None:
-      error("Missing 'type' attribute of type_alias node")
+      node_error(c, "Missing 'type' attribute of type_alias node")
 
     my_type = replace_type_characters(my_type)
 
@@ -522,7 +532,7 @@ class Generator(object):
       if val is not None:
         self.write_tag_decl(val)
       else:
-        error("Missing 'name' entry of 'fwd_tag' xml element")
+        node_error(c, "Missing 'name' entry of 'fwd_tag' xml element")
 
   def define_tag(self, c):
     t = Tag(c, self.groups)
@@ -535,10 +545,10 @@ class Generator(object):
   def define_group(self, c):
     name = c.get('name')
     if name is None:
-      error("group tag must have a name attribute")
-    if self.groups[name] is not None:
-      error("group '" + name + "' cannot be redefined")
-    self.groups[name] = member_list(c, groups)
+      node_error(c, "group tag must have a name attribute")
+    if name in self.groups:
+      node_error(c, "group '" + name + "' cannot be redefined")
+    self.groups[name] = member_list(c, self.groups)
 
 
 argparser = argparse.ArgumentParser(description='Generate C++ structure definitions from XML schema file.')

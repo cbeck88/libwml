@@ -23,6 +23,7 @@ using bool_val = bool;
 using string_val = std::string;
 using string_list_val = std::vector<std::string>;
 using string_to_int_map = std::map<std::string, int_val>;
+using int_pair = std::pair<int, int>;
 
 template <typename T>
 using child_vector = std::vector<T>;
@@ -30,6 +31,7 @@ using child_vector = std::vector<T>;
 using string_opt = util::optional<std::string>;
 using int_opt = util::optional<int>;
 using bool_opt = util::optional<bool>;
+using int_pair_opt = util::optional<int_pair>;
 
 // tag trait
 
@@ -49,7 +51,7 @@ struct tag_base : std::true_type {
 // tags should be defined by the template parameter to heterogenous_sequence_base.
 
 template <typename T>
-struct heterogenous_sequence_base {
+struct heterogenous_sequence {
   using var_t = typename T::var_t;
   std::vector<var_t> contents;
 
