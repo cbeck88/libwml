@@ -1,37 +1,43 @@
-#pragma once
+<root>
 
-/***
- * This is basically a translation of the WML schema described in the wesnoth
- * wiki
- */
+<!-- Catch all, used for some parts of AST that aren't complete -->
+<tag name="unstructured"> <member type="all_children_map" name="all" /> </tag>
 
-#include <libwml/declare_wml_tag.hpp>
-#include <libwml/tags.hpp>
-#include <libwml/traits/tag.hpp>
-#include <libwml/util/optional.hpp>
-#include <libwml/util/variant.hpp>
-#include <libwml/attributes.hpp>
-#include <libwml/child_containers.hpp>
-#include <libwml/heterogenous_sequence.hpp>
-#include <libwml/util/variant.hpp>
-#include <libwml/util/optional.hpp>
-#include <vector>
+<fwd_tag name="unit_filter" />
+<type_alias name="unit_filter_wrapper" type="util::recursive_wrapper[unit_filter]" />
 
-namespace wml {
-  using int_val = int;
-  using bool_val = bool;
-  using string_val = std::string;
-  using string_list_val = std::vector<std::string>;
-  using string_to_int_map = std::map<std::string, int_val>;
+<tag name="attack_filter">
+  <member type="string_opt" name="range" />
+  <member type="string_opt" name="name" />
+  <member type="string_opt" name="type" />
+  <member type="int_opt"    name="damage" />
+  <member type="string_opt" name="special" />
+</tag>
 
-  template <typename T>
-  using child_vector = std::vector<T>;
+<tag name="frame_tag" alias="frame">
+  <member type="string_opt" name="image" />
+  <member type="string_opt" name="sound" />
+  <member type="string_opt" name="halo"  />
+  <member type="int_opt"    name="alpha" />
+  <member type="int_opt"    name="duration" />
+  <member type="int_opt"    name="halo_x" />
+  <member type="int_opt"    name="halo_y" />
+  <member type="int_opt"    name="offset" />
+  <member type="int_opt"    name="directional_x" />
+  <member type="bool_opt"   name="auto_hflip" />
+  <member type="bool_opt"   name="auto_vflip" />
+  <member type="string_opt" name="blend_color" />
+  <member type="int_opt"    name="blend_ratio" />
+  <member type="string_opt" name="image_diagonal" />
+</tag>
 
-  using string_opt = util::optional<std::string>;
-  using int_opt = util::optional<int>;
-  using bool_opt = util::optional<bool>;
-} // end namespace wml
+<tag name="top_level">
+  <member type="all_children_map" name="all" />
+</tag>
 
+</root>
+
+<!--
 namespace wml { struct unit_filter; }
 namespace wml { typedef util::recursive_wrapper<unit_filter> unit_filter_wrapper; }
 
@@ -1433,3 +1439,4 @@ DECLARE_WML_TAG(top_level,
   (unit_type, unit_type)
   (move_type, movetype)
   (event, event));
+-->

@@ -8,7 +8,7 @@
 #include <libwml/traits/attribute.hpp>
 #include <libwml/traits/child_container.hpp>
 #include <libwml/traits/tag.hpp>
-#include <libwml/visit_tag.hpp>
+#include <libwml/util/optional.hpp>
 
 namespace wml {
 
@@ -44,10 +44,39 @@ struct coercer {
       }
     }
 
-    // TODO: Check if it has a default value?
     if (log_) {
       log_->report_attribute_fail<T>(key, "(none)", "Attribute not found!");
     }
+  }
+
+  // With default value
+  template <typename T, typename D>
+  std::enable_if_t<traits::attribute<T>::value>
+  operator()(const char * key, T & value, D && default_value_func) {
+    for (int idx = 0; idx < cfg_.size(); ++idx) {
+      if (!used_[idx]) {
+        if (const wml::Pair * p = util::get<wml::Pair>(&cfg_[idx])) {
+          if (p->first == key) {
+            if (auto maybe_error = traits::attribute<T>::coerce(value, p->second)) {
+              if (log_) {
+                log_->report_attribute_fail<T>(key, p->second, *maybe_error);
+              }
+            }
+            used_[idx] = true;
+            return ;
+          }
+        }
+      }
+    }
+
+    value = default_value_func();
+  }
+
+  // Optional attribute (if no explicit default, treat as though it has one)
+  template <typename T, typename D>
+  std::enable_if_t<traits::attribute<T>::value>
+  operator()(const char * key, util::optional<T> & value) {
+    (*this)(key, value, []() -> util::optional<T> { return {}; } );
   }
 
   // (Individual) child tag
@@ -58,9 +87,9 @@ struct coercer {
       if (!used_[idx]) {
         if (const wml::body * b = util::get<wml::body>(&cfg_[idx])) {
           if (key == b->name) {
-            if (log_) { log_->push_context(key); }
+            log_context c{log_, key};
+
             traits::tag<T>::coerce(value, *b, log_);
-            if (log_) { log_->pop_context(); }
 
             used_[idx] = true;
             return ;
@@ -70,10 +99,32 @@ struct coercer {
     }
 
     if (log_) {
-      log_->report_child_missing<T>(key, "Child not found!");
+      log_->report_child_missing<T>(key, "Mandatory child not found!");
     }
   }
 
+  // optional child
+  template <typename T>
+  std::enable_if_t<traits::tag<T>::value>
+  operator()(const char * key, util::optional<T> & value) {
+    for (int idx = 0; idx < cfg_.size(); ++idx) {
+      if (!used_[idx]) {
+        if (const wml::body * b = util::get<wml::body>(&cfg_[idx])) {
+          if (key == b->name) {
+            log_context c{log_, key};
+
+            value.emplace();
+            traits::tag<T>::coerce(*value, *b, log_);
+
+            used_[idx] = true;
+            return ;
+          }
+        }
+      }
+    }
+  }
+
+  // recursive_wrapper
   template <typename T>
   std::enable_if_t<traits::tag<T>::value>
   operator()(const char * key, util::recursive_wrapper<T> & value) {

@@ -250,8 +250,10 @@ struct wml_grammar : qi::grammar<Iterator, body(), qi::locals<Key>> {
     using qi::lexeme;
     using qi::on_error;
     using qi::fail;
-    using boost::spirit::unicode::char_;
-    using boost::spirit::unicode::string;
+    using qi::char_;
+    using qi::string;
+    // using boost::spirit::unicode::char_;
+    // using boost::spirit::unicode::string;
     using namespace qi::labels;
 
     using phoenix::construct;

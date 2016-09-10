@@ -1,9 +1,9 @@
 #include "filesystem.hpp"
 #include "unit_test.hpp"
-#include <libwml/wesnoth_ast.hpp>
+#include <libwml/wesnoth_1_12.hpp>
+#include <libwml/coerce.hpp>
 #include <libwml/coerce_log.hpp>
 #include <libwml/wml_parser.hpp>
-#include <libwml/traits/tag.hpp>
 
 #include <iostream>
 
@@ -24,9 +24,8 @@ test_file(const std::string & filename) {
     std::cerr << filename << ": PARSED_VALID_WML:" << std::endl;
 
     wml::coerce_log log;
-    wml::top_level ast;
-
-    wml::traits::tag<wml::top_level>::coerce_to_tag(ast, *wml_body, &log);
+    wml::top_level ast(wml::coerce<wml::top_level>(*wml_body, &log));
+    static_cast<void>(ast);
 
     log.write(std::cerr);
 

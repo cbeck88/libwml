@@ -1,4 +1,6 @@
 /build*
 /external/*
 preprocessed
+dummy.hpp
 a.out
+/schemas/dummy.xml

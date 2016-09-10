@@ -100,4 +100,16 @@ struct coerce_log {
   }
 };
 
+// Raii object for managing push / pop
+struct log_context {
+  coerce_log * log_;
+
+  explicit log_context(coerce_log * l, std::string key)
+    : log_(l) {
+    if (log_) { log_->push_context(std::move(key)); }
+  }
+
+  ~log_context() { if (log_) { log_->pop_context(); } }
+};
+
 } // end namespace wml
